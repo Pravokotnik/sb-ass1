@@ -1,0 +1,12 @@
+# Set classifier as (1) PNN or (2) MLP
+network_type 2
+
+# Verbose output to show progress
+verbose y
+
+# Path to the output file for predictions (can be relative FROM CWD or absolute)
+outfile pcasys.out
+
+# RELATIVE PATH FROM PCASYS location (~/nbis/nbis) to the list of fingerprint images
+demo_images_list ../../Desktop/MAG/SB/ASS1/pcasys_list.txt
+# Image paths inside the list are relative to ~/Downloads (where NBIS was built)
