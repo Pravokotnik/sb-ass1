@@ -3,7 +3,7 @@
 # 1. Plot bozorth3 scores for genuine and impostor pairs on one graph.
 # 2. Plot the similarity matrix of all the comparisons.
 # 3. Plot the nfiq quality values of the fingerprints.
-# 4. Find the best threshold with FAR, FRR and EER.
+# 4. Find the best threshold: the one with the highest accuracy over all thresholds.
 # 5. Classify every pair once with that threshold and report accuracy.
 # 6. Same, but first group fingerprints by type (pcasys) and only match within a group.
 #
@@ -167,28 +167,28 @@ def plot_quality(names, quality):
     plt.close()
 
 
-def far_frr(genuine, impostor):
-    # A pair is accepted as "same finger" when score >= threshold
+def accuracy_per_threshold(genuine, impostor):
+    # A pair is predicted "same finger" when score >= threshold.
+    # Accuracy = (genuine pairs accepted + impostor pairs rejected) / all pairs
     thresholds = np.arange(0, max(genuine.max(), impostor.max()) + 2)
-    far = np.array([np.mean(impostor >= t) for t in thresholds])  # impostors wrongly accepted
-    frr = np.array([np.mean(genuine < t) for t in thresholds])    # genuines wrongly rejected
-    return thresholds, far, frr
+    accuracy = np.array([(np.sum(genuine >= t) + np.sum(impostor < t)) / (len(genuine) + len(impostor))
+                         for t in thresholds])
+    return thresholds, accuracy
 
 
-def plot_far_frr(thresholds, far, frr, eer_threshold, eer):
+def plot_accuracy(thresholds, accuracy, best_threshold):
     os.makedirs(PLOT_DIR, exist_ok=True)
     plt.figure(figsize=(7, 4))
-    plt.plot(thresholds, far, label="FAR")
-    plt.plot(thresholds, frr, label="FRR")
-    plt.axvline(eer_threshold, color="black", linestyle="--",
-                label=f"EER = {eer:.2%} at threshold {eer_threshold}")
-    plt.xlim(0, 100)  # FAR is already 0 here; zoom in on where the curves cross
+    plt.plot(thresholds, accuracy)
+    plt.axvline(best_threshold, color="black", linestyle="--",
+                label=f"Best threshold = {best_threshold} (accuracy {accuracy.max():.2%})")
+    plt.xlim(0, 100)  # accuracy only keeps slowly dropping after this
     plt.xlabel("Threshold")
-    plt.ylabel("Error rate")
-    plt.title("FAR and FRR across thresholds")
+    plt.ylabel("Accuracy")
+    plt.title("Classification accuracy across thresholds")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(PLOT_DIR, "far_frr.png"), dpi=200)
+    plt.savefig(os.path.join(PLOT_DIR, "accuracy.png"), dpi=200)
     plt.close()
 
 
@@ -207,21 +207,20 @@ if __name__ == "__main__":
     plot_quality(names, quality)
 
 
-    thresholds, far, frr = far_frr(genuine, impostor)
-    # EER: the threshold where FAR and FRR are (closest to) equal
-    i = np.argmin(np.abs(far - frr))
-    eer_threshold, eer = thresholds[i], (far[i] + frr[i]) / 2
-    print(f"EER = {eer:.2%} at threshold {eer_threshold} (FAR = {far[i]:.2%}, FRR = {frr[i]:.2%})")
-    plot_far_frr(thresholds, far, frr, eer_threshold, eer)
+    # Try every threshold and keep the one with the highest accuracy
+    thresholds, accuracy = accuracy_per_threshold(genuine, impostor)
+    threshold = thresholds[np.argmax(accuracy)]
+    print(f"Best threshold = {threshold} (accuracy {accuracy.max():.2%})")
+    plot_accuracy(thresholds, accuracy, threshold)
 
 
     # Classification: each pair only once (from read_scores), predicted "same finger" when score >= threshold.
     # Correct = genuine pair predicted same + impostor pair predicted different
-    true_accepts = np.sum(genuine >= eer_threshold)
-    true_rejects = np.sum(impostor < eer_threshold)
+    true_accepts = np.sum(genuine >= threshold)
+    true_rejects = np.sum(impostor < threshold)
     total = len(genuine) + len(impostor)
     accuracy = (true_accepts + true_rejects) / total
-    print(f"Classification at threshold {eer_threshold}: {true_accepts}/{len(genuine)} genuine and "
+    print(f"Classification at threshold {threshold}: {true_accepts}/{len(genuine)} genuine and "
           f"{true_rejects}/{len(impostor)} impostor pairs correct")
     print(f"Accuracy = {true_accepts + true_rejects}/{total} = {accuracy:.2%}")
 
@@ -237,7 +236,7 @@ if __name__ == "__main__":
         same_finger = subject_of(a) == subject_of(b)
         if types[a] == types[b]:
             matched += 1
-            predicted_same = score >= eer_threshold
+            predicted_same = score >= threshold
         else:
             predicted_same = False
         correct += predicted_same == same_finger
