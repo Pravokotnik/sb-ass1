@@ -2,4 +2,11 @@
 
 for f in DB1_B/*.tif; do magick "$f" "DB1_B_png/$(basename "${f%.tif}").png"; done;
 
-2. 
+2. Compute minutiae points for all the images: mindtct img.png out/img.
+
+mkdir -p out
+for f in DB1_B_png/*.png; do mindtct "$f" "out/$(basename "${f%.png}")"; done
+
+3. Compute all the bozorth3 comparisons (all vs. all): bozorth out/img1.xyt out/img2.xyt.
+
+for f in out/*.xyt; do bozorth3 -A outfmt=spg -p "$f" out/*.xyt; done > scores.txt
