@@ -1,0 +1,5 @@
+1. Transform the images from TIFFto PNG(magickworks well: magick img.tif img.png).
+
+for f in DB1_B/*.tif; do magick "$f" "DB1_B_png/$(basename "${f%.tif}").png"; done;
+
+2. 
