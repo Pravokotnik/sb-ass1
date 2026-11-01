@@ -6,11 +6,13 @@ from step2_genuine_impostor import load_unique_pairs, subject_of
 from step5_threshold import find_best_threshold
 from step6_classification import load_pairs
 
-PNG_DIR = "DB1_B_png"
-WSQ_DIR = "wsq"
-LIST_FILE = "pcasys_list.txt"
-PRS_FILE = "pcasys.prs"
-PCASYS_OUT = "pcasys.out"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+PNG_DIR = os.path.join(ROOT, "DB1_B_png")
+PCASYS_DIR = os.path.join(ROOT, "pcasys")
+WSQ_DIR = os.path.join(PCASYS_DIR, "wsq")
+LIST_FILE = os.path.join(PCASYS_DIR, "pcasys_list.txt")
+PRS_FILE = os.path.join(PCASYS_DIR, "pcasys.prs")
+PCASYS_OUT = os.path.join(PCASYS_DIR, "pcasys.out")
 
 # pcasys does not read paths as given: it puts its own folders in front of them.
 #   - the image list path is read relative to the NBIS install folder
@@ -40,7 +42,7 @@ def convert_to_wsq():
                         "-raw_in", f"{WSQ_SIZE},{WSQ_SIZE},8,500"],
                        check=True, capture_output=True)
         os.remove(gray)
-    print(f"Converted images to WSQ in {WSQ_DIR}/")
+    print(f"Converted images to WSQ in pcasys/wsq/")
 
 
 def write_pcasys_files():
@@ -56,7 +58,7 @@ def write_pcasys_files():
         f.write("verbose n\n")
         f.write(f"outfile {os.path.abspath(PCASYS_OUT)}\n")
         f.write(f"demo_images_list {list_path}\n")
-    print(f"Wrote {LIST_FILE} and {PRS_FILE}")
+    print("Wrote pcasys/pcasys_list.txt and pcasys/pcasys.prs")
 
 
 def run_pcasys():
@@ -64,7 +66,7 @@ def run_pcasys():
     if os.path.exists(PCASYS_OUT):
         os.remove(PCASYS_OUT)
     subprocess.run(["pcasys", PRS_FILE], check=True, capture_output=True)
-    print(f"Ran pcasys, output in {PCASYS_OUT}")
+    print("Ran pcasys, output in pcasys/pcasys.out")
 
 
 def read_types():

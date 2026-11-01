@@ -4,11 +4,12 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-SCORES_FILE = "scores.csv"
-PLOT_DIR = "plots"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+SCORES_FILE = os.path.join(ROOT, "results", "scores.csv")
+PLOT_DIR = os.path.join(ROOT, "plots")
 
 GENUINE_COLOR = "#ee0dae"   # blue
-IMPOSTOR_COLOR = "#8d32ee"  # orange
+IMPOSTOR_COLOR = "#760176"  # orange
 
 def subject_of(name):
     # so that '104_3' -> '104' (ignore finger number)
@@ -30,18 +31,24 @@ def load_unique_pairs():
     return np.array(genuine), np.array(impostor)
 
 
-def plot_genuine_impostor(genuine, impostor):
+def plot_genuine_impostor(genuine, impostor, threshold):
     os.makedirs(PLOT_DIR, exist_ok=True)
     bins = range(0, max(genuine.max(), impostor.max()) + 2, 1)
+    plt.rcParams["font.size"] = 8
+    plt.figure(figsize=(3.5, 2.3))  # one report column wide
 
     plt.hist(impostor, bins=bins, alpha=0.7, color=IMPOSTOR_COLOR, label="Impostor")
     plt.hist(genuine, bins=bins, alpha=0.7, color=GENUINE_COLOR, label="Genuine")
 
+    plt.axvline(threshold, color="grey", linestyle="--",
+                label=f"threshold = {threshold}")
+
+    plt.yscale("log")
     plt.xlabel("bozorth3 score")
-    plt.ylabel("Number of pairs")
-    plt.title("Genuine vs. impostor bozorth3 scores")
+    plt.ylabel("Number of pairs (log scale)")
     plt.legend()
-    plt.savefig(os.path.join(PLOT_DIR, "genuine_impostor.png"), dpi=200)
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOT_DIR, "genuine_impostor.png"), dpi=300)
     print("Saved plots/genuine_impostor.png")
 
 
@@ -51,4 +58,6 @@ if __name__ == "__main__":
           f"min={genuine.min()}  max={genuine.max()}")
     print(f"Impostor pairs: {len(impostor):5d}  mean={impostor.mean():6.1f}  "
           f"min={impostor.min()}  max={impostor.max()}")
-    plot_genuine_impostor(genuine, impostor)
+    from step5_threshold import find_best_threshold
+    best_threshold = find_best_threshold(genuine, impostor)[2]
+    plot_genuine_impostor(genuine, impostor, best_threshold)

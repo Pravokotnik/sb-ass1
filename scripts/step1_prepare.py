@@ -8,9 +8,9 @@ Step 1 ("First steps") of Assignment 1 - Fingerprint Recognition with NBIS.
 Output:
   DB1_B_png/<name>.png   converted images (also used later by nfiq / png2wsq)
   out/<name>.*           mindtct output files (.xyt is the one bozorth3 needs)
-  scores.csv             all-vs-all bozorth3 scores: probe,gallery,score
+  results/scores.csv     all-vs-all bozorth3 scores: probe,gallery,score
 
-Run:  python step1_prepare.py
+Run:  python scripts/step1_prepare.py
 """
 
 import csv
@@ -18,10 +18,11 @@ import glob
 import os
 import subprocess
 
-TIFF_DIR = "DB1_B"
-PNG_DIR = "DB1_B_png"
-MINUTIAE_DIR = "out"
-SCORES_FILE = "scores.csv"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+TIFF_DIR = os.path.join(ROOT, "DB1_B")
+PNG_DIR = os.path.join(ROOT, "DB1_B_png")
+MINUTIAE_DIR = os.path.join(ROOT, "out")
+SCORES_FILE = os.path.join(ROOT, "results", "scores.csv")
 
 
 def convert_tiff_to_png():
@@ -32,7 +33,7 @@ def convert_tiff_to_png():
         name = os.path.splitext(os.path.basename(tif))[0]
         png = os.path.join(PNG_DIR, name + ".png")
         subprocess.run(["magick", tif, png], check=True)
-    print(f"Converted {len(tiffs)} TIFF images to PNG in {PNG_DIR}/")
+    print(f"Converted {len(tiffs)} TIFF images to PNG in DB1_B_png/")
 
 
 def compute_minutiae():
@@ -47,7 +48,7 @@ def compute_minutiae():
         xyt = os.path.join(MINUTIAE_DIR, name + ".xyt")
         if not os.path.isfile(xyt):
             raise RuntimeError(f"mindtct produced no {xyt}")
-    print(f"Computed minutiae for {len(pngs)} images in {MINUTIAE_DIR}/")
+    print(f"Computed minutiae for {len(pngs)} images in out/")
 
 
 def compute_bozorth_scores():
@@ -66,11 +67,12 @@ def compute_bozorth_scores():
             score, p, g = line.split()
             rows.append((name_of(p), name_of(g), int(score)))
 
+    os.makedirs(os.path.dirname(SCORES_FILE), exist_ok=True)
     with open(SCORES_FILE, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["probe", "gallery", "score"])
         writer.writerows(rows)
-    print(f"Saved {len(rows)} bozorth3 scores ({len(xyts)} x {len(xyts)}) to {SCORES_FILE}")
+    print(f"Saved {len(rows)} bozorth3 scores ({len(xyts)} x {len(xyts)}) to results/scores.csv")
 
 
 def name_of(path):

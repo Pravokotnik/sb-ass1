@@ -1,0 +1,4 @@
+network_type 2
+verbose n
+outfile /Users/masauhan/Desktop/MAG/SB/ASS1/pcasys/pcasys.out
+demo_images_list ../../Desktop/MAG/SB/ASS1/pcasys/pcasys_list.txt

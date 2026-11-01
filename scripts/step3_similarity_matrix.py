@@ -4,8 +4,9 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-SCORES_FILE = "scores.csv"
-PLOT_DIR = "plots"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+SCORES_FILE = os.path.join(ROOT, "results", "scores.csv")
+PLOT_DIR = os.path.join(ROOT, "plots")
 
 
 def load_matrix():
@@ -38,6 +39,8 @@ def load_matrix():
 def plot_similarity_matrix(names, matrix):
     os.makedirs(PLOT_DIR, exist_ok=True)
 
+    plt.rcParams["font.size"] = 8
+    plt.figure(figsize=(3.5, 2.4))  # one report column wide
     plt.imshow(matrix, cmap="RdPu")
     plt.colorbar(label="bozorth3 score")
 
@@ -46,13 +49,13 @@ def plot_similarity_matrix(names, matrix):
     for name in names:
         subjects.append(name.split("_")[0])
 
-    plt.xticks(range(0, len(names), 8), subjects[::8])
+    plt.xticks(range(0, len(names), 8), subjects[::8], rotation=90)
     plt.yticks(range(0, len(names), 8), subjects[::8])
 
     plt.xlabel("Gallery fingerprint")
     plt.ylabel("Probe fingerprint")
-    plt.title("Similarity matrix (bozorth3 scores)")
-    plt.savefig(os.path.join(PLOT_DIR, "similarity_matrix.png"), dpi=200)
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOT_DIR, "similarity_matrix.png"), dpi=300)
     print("Saved plots/similarity_matrix.png")
 
 

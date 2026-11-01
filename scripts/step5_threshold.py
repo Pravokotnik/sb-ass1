@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 
 from step2_genuine_impostor import load_unique_pairs
 
-PLOT_DIR = "plots"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+PLOT_DIR = os.path.join(ROOT, "plots")
 
 
 def accuracy_at(threshold, genuine, impostor):
@@ -38,7 +39,7 @@ def find_best_threshold(genuine, impostor):
 def plot_accuracy(thresholds, accuracies, best_threshold, best_accuracy):
     os.makedirs(PLOT_DIR, exist_ok=True)
 
-    plt.plot(thresholds, accuracies, color="#b339c5")
+    plt.plot(thresholds, accuracies, color="#760176")
     plt.axvline(best_threshold, color="grey", linestyle="--",
                 label=f"best threshold = {best_threshold} ({best_accuracy:.2%})")
     plt.xlabel("Threshold (bozorth3 score)")

@@ -5,9 +5,10 @@ import subprocess
 
 import matplotlib.pyplot as plt
 
-PNG_DIR = "DB1_B_png"
-QUALITY_FILE = "quality.csv"
-PLOT_DIR = "plots"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+PNG_DIR = os.path.join(ROOT, "DB1_B_png")
+QUALITY_FILE = os.path.join(ROOT, "results", "quality.csv")
+PLOT_DIR = os.path.join(ROOT, "plots")
 
 
 def compute_quality():
@@ -18,12 +19,13 @@ def compute_quality():
         result = subprocess.run(["nfiq", png], check=True, capture_output=True, text=True)
         qualities[name] = int(result.stdout.strip())
 
+    os.makedirs(os.path.dirname(QUALITY_FILE), exist_ok=True)
     with open(QUALITY_FILE, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["name", "quality"])
         for name in qualities:
             writer.writerow([name, qualities[name]])
-    print(f"Saved {len(qualities)} quality values to {QUALITY_FILE}")
+    print(f"Saved {len(qualities)} quality values to results/quality.csv")
 
     return qualities
 
@@ -42,11 +44,13 @@ def plot_quality(qualities):
         counts.append(count)
         print(f"Quality {level}: {count} images")
 
-    plt.bar(levels, counts, color="#b339c5")
+    plt.rcParams["font.size"] = 8
+    plt.figure(figsize=(3.5, 1.8))  # one report column wide
+    plt.bar(levels, counts, color="#760176")
     plt.xlabel("nfiq quality (1 = best, 5 = worst)")
     plt.ylabel("Number of images")
-    plt.title("Fingerprint quality (nfiq)")
-    plt.savefig(os.path.join(PLOT_DIR, "quality.png"), dpi=200)
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOT_DIR, "quality.png"), dpi=300)
     print("Saved plots/quality.png")
 
 
