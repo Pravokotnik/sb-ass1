@@ -1,18 +1,3 @@
-"""
-Step 1 ("First steps") of Assignment 1 - Fingerprint Recognition with NBIS.
-
-  1. Convert every TIFF in DB1_B/ to PNG          (magick img.tif img.png)
-  2. Extract minutiae from every PNG              (mindtct img.png out/img)
-  3. Compare every fingerprint with every other   (bozorth3 out/a.xyt out/b.xyt)
-
-Output:
-  DB1_B_png/<name>.png   converted images (also used later by nfiq / png2wsq)
-  out/<name>.*           mindtct output files (.xyt is the one bozorth3 needs)
-  results/scores.csv     all-vs-all bozorth3 scores: probe,gallery,score
-
-Run:  python scripts/step1_prepare.py
-"""
-
 import csv
 import glob
 import os
