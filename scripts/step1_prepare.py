@@ -3,7 +3,7 @@ import glob
 import os
 import subprocess
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # the ASS1 folder
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # ASS1 folder
 TIFF_DIR = os.path.join(ROOT, "DB1_B")
 PNG_DIR = os.path.join(ROOT, "DB1_B_png")
 MINUTIAE_DIR = os.path.join(ROOT, "out")
@@ -11,7 +11,7 @@ SCORES_FILE = os.path.join(ROOT, "results", "scores.csv")
 
 
 def convert_tiff_to_png():
-    """mindtct cannot read TIFF (it silently fails), so convert to PNG first."""
+    # convert all .tif in DB1_B/ to .png in DB1_B_png/
     os.makedirs(PNG_DIR, exist_ok=True)
     tiffs = sorted(glob.glob(os.path.join(TIFF_DIR, "*.tif")))
     for tif in tiffs:
@@ -22,8 +22,7 @@ def convert_tiff_to_png():
 
 
 def compute_minutiae():
-    """Run mindtct on every PNG. It writes several files per image; .xyt holds
-    one minutia per line: x  y  angle(theta)  quality."""
+    # run mindtct on all PNGs in DB1_B_png/ and write .xyt files to out/ (x, y, theta, quality)
     os.makedirs(MINUTIAE_DIR, exist_ok=True)
     pngs = sorted(glob.glob(os.path.join(PNG_DIR, "*.png")))
     for png in pngs:
@@ -37,10 +36,9 @@ def compute_minutiae():
 
 
 def compute_bozorth_scores():
-    """All vs. all comparisons. Instead of 80*80 separate bozorth3 calls we call
-    it once per probe with the whole gallery (-p probe file1 file2 ...), which
-    gives exactly the same scores as `bozorth3 a.xyt b.xyt`, just faster.
-    -A outfmt=spg prints "score probe gallery" on each line."""
+    # compare every fingerprint with every fingerprint (80 x 80 = 6400 scores)
+    # -p runs one probe against the whole gallery in one bozorth3 call (same scores as calling it per pair, just faster)
+    # -A outfmt=spg prints "score probe gallery" on each line.
     xyts = sorted(glob.glob(os.path.join(MINUTIAE_DIR, "*.xyt")))
     rows = []
     for probe in xyts:
